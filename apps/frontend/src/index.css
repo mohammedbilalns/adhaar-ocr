@@ -13,6 +13,8 @@
   --pale-blue-text: #1f6c9f;
   --pale-green: #edf3ec;
   --pale-green-text: #346538;
+  --pale-red: #fdebec;
+  --pale-red-text: #9f2f2d;
   --dropzone-tint-top: rgba(252, 251, 247, 0.82);
   --dropzone-tint-bottom: rgba(255, 255, 255, 0.96);
   --button-bg: #171411;
@@ -53,6 +55,8 @@
   --pale-blue-text: #b4daf4;
   --pale-green: rgba(146, 176, 126, 0.14);
   --pale-green-text: #bdd1b0;
+  --pale-red: rgba(159, 47, 45, 0.18);
+  --pale-red-text: #efb1af;
   --dropzone-tint-top: rgba(38, 34, 30, 0.9);
   --dropzone-tint-bottom: rgba(29, 26, 23, 0.98);
   --button-bg: #f3ede5;

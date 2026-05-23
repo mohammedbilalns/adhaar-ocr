@@ -12,6 +12,7 @@ function App() {
     ocrStatus,
     ocrProgress,
     extractedRecord,
+    ocrError,
     canStartOcr,
     selectFile,
     removeFile,
@@ -70,6 +71,7 @@ function App() {
         ocrStatus={ocrStatus}
         ocrProgress={ocrProgress}
         extractedRecord={extractedRecord}
+        ocrError={ocrError}
         frontUpload={uploads.front}
         backUpload={uploads.back}
       />

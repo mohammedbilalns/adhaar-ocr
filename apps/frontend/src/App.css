@@ -351,6 +351,11 @@
   color: var(--pale-blue-text);
 }
 
+.status-error {
+  background: var(--pale-red);
+  color: var(--pale-red-text);
+}
+
 .status-ready,
 .status-done {
   background: var(--pale-green);

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  type AadhaarApiResponse,
   MAX_FILE_SIZE,
   type OcrStatus,
-  buildMockRecord,
   initialUploadState,
+  mapAadhaarResponseToRecord,
   type ExtractedRecord,
   type Side,
   type UploadState,
@@ -19,6 +20,7 @@ export function useAadhaarOcr() {
   const [ocrStatus, setOcrStatus] = useState<OcrStatus>('idle')
   const [ocrProgress, setOcrProgress] = useState(0)
   const [extractedRecord, setExtractedRecord] = useState<ExtractedRecord | null>(null)
+  const [ocrError, setOcrError] = useState<string | null>(null)
 
   const previewUrls = useRef<string[]>([])
   const ocrTimer = useRef<number | null>(null)
@@ -40,6 +42,7 @@ export function useAadhaarOcr() {
     setExtractedRecord(null)
     setOcrStatus('idle')
     setOcrProgress(0)
+    setOcrError(null)
 
     if (ocrTimer.current) {
       window.clearInterval(ocrTimer.current)
@@ -110,34 +113,43 @@ export function useAadhaarOcr() {
       return
     }
 
-    const frontFileName = uploads.front.file.name
-    const backFileName = uploads.back.file.name
-
     setOcrStatus('processing')
     setOcrProgress(0)
     setExtractedRecord(null)
+    setOcrError(null)
 
     if (ocrTimer.current) {
       window.clearInterval(ocrTimer.current)
     }
 
     ocrTimer.current = window.setInterval(() => {
-      setOcrProgress((current) => {
-        const nextProgress = Math.min(current + 7, 100)
+      setOcrProgress((current) => Math.min(current + 6, 92))
+    }, 180)
 
-        if (nextProgress >= 100) {
-          if (ocrTimer.current) {
-            window.clearInterval(ocrTimer.current)
-            ocrTimer.current = null
-          }
-
-          setOcrStatus('done')
-          setExtractedRecord(buildMockRecord(frontFileName, backFileName))
+    void runOcrRequest({
+      frontFile: uploads.front.file,
+      backFile: uploads.back.file,
+      onSuccess: (payload) => {
+        if (ocrTimer.current) {
+          window.clearInterval(ocrTimer.current)
+          ocrTimer.current = null
         }
 
-        return nextProgress
-      })
-    }, 140)
+        setOcrProgress(100)
+        setOcrStatus('done')
+        setExtractedRecord(mapAadhaarResponseToRecord(payload))
+      },
+      onError: (message) => {
+        if (ocrTimer.current) {
+          window.clearInterval(ocrTimer.current)
+          ocrTimer.current = null
+        }
+
+        setOcrProgress(0)
+        setOcrStatus('error')
+        setOcrError(message)
+      },
+    })
   }
 
   return {
@@ -145,9 +157,55 @@ export function useAadhaarOcr() {
     ocrStatus,
     ocrProgress,
     extractedRecord,
+    ocrError,
     canStartOcr,
     selectFile,
     removeFile,
     startOcr,
   }
+}
+
+async function runOcrRequest({
+  frontFile,
+  backFile,
+  onSuccess,
+  onError,
+}: {
+  frontFile: File
+  backFile: File
+  onSuccess: (payload: AadhaarApiResponse) => void
+  onError: (message: string) => void
+}) {
+  try {
+    const formData = new FormData()
+    formData.append('front', frontFile)
+    formData.append('back', backFile)
+
+    const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:3000'
+    const response = await fetch(`${apiBaseUrl}/ocr/aadhaar`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    const payload = (await response.json()) as AadhaarApiResponse | { error?: string }
+
+    if (!response.ok || isErrorPayload(payload)) {
+      onError(
+        isErrorPayload(payload)
+          ? payload.error || 'Unable to extract text from the uploaded images.'
+          : 'Unable to extract text from the uploaded images.',
+      )
+      return
+    }
+
+    onSuccess(payload)
+  } catch {
+    onError('Unable to reach the OCR service. Check that the backend is running.')
+  }
+}
+
+function isErrorPayload(payload: AadhaarApiResponse | { error?: string }): payload is {
+  error?: string
+} {
+  return 'error' in payload
 }

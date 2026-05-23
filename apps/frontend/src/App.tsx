@@ -1,4 +1,5 @@
 import './App.css'
+import { ImageEditorDialog } from './components/ImageEditorDialog'
 import { OcrResults } from './components/OcrResults'
 import { ThemeToggle } from './components/ThemeToggle'
 import { UploadCard } from './components/UploadCard'
@@ -9,12 +10,17 @@ function App() {
   const { theme, toggleTheme } = useTheme()
   const {
     uploads,
+    editor,
     ocrStatus,
     ocrProgress,
     extractedRecord,
+    ocrError,
     canStartOcr,
     selectFile,
     removeFile,
+    openEditor,
+    cancelEditing,
+    saveEditing,
     startOcr,
   } = useAadhaarOcr()
 
@@ -43,12 +49,14 @@ function App() {
             upload={uploads.front}
             onFileSelect={selectFile}
             onRemove={removeFile}
+            onEdit={openEditor}
           />
           <UploadCard
             side="back"
             upload={uploads.back}
             onFileSelect={selectFile}
             onRemove={removeFile}
+            onEdit={openEditor}
           />
         </div>
 
@@ -70,9 +78,23 @@ function App() {
         ocrStatus={ocrStatus}
         ocrProgress={ocrProgress}
         extractedRecord={extractedRecord}
+        ocrError={ocrError}
         frontUpload={uploads.front}
         backUpload={uploads.back}
       />
+
+      {editor ? (
+        <ImageEditorDialog
+          isOpen={Boolean(editor)}
+          side={editor.side}
+          imageUrl={editor.sourceUrl}
+          fileName={editor.fileName}
+          initialRotation={editor.rotation}
+          initialCrop={editor.crop}
+          onCancel={cancelEditing}
+          onSave={saveEditing}
+        />
+      ) : null}
     </main>
   )
 }

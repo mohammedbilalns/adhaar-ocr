@@ -4,6 +4,7 @@ type OcrResultsProps = {
   ocrStatus: OcrStatus
   ocrProgress: number
   extractedRecord: ExtractedRecord | null
+  ocrError: string | null
   frontUpload: UploadState
   backUpload: UploadState
 }
@@ -12,6 +13,7 @@ export function OcrResults({
   ocrStatus,
   ocrProgress,
   extractedRecord,
+  ocrError,
   frontUpload,
   backUpload,
 }: OcrResultsProps) {
@@ -28,7 +30,11 @@ export function OcrResults({
             <h2>OCR status</h2>
           </div>
           <span className={`status-chip status-${ocrStatus}`}>
-            {ocrStatus === 'processing' ? 'Reading card' : 'Extraction ready'}
+            {ocrStatus === 'processing'
+              ? 'Reading card'
+              : ocrStatus === 'error'
+                ? 'Request failed'
+                : 'Extraction ready'}
           </span>
         </div>
 
@@ -64,41 +70,44 @@ export function OcrResults({
           </div>
         </div>
 
-        {extractedRecord ? (
+        {ocrStatus === 'error' ? (
+          <div className="empty-record">
+            <p>{ocrError ?? 'Unable to process the uploaded images.'}</p>
+            <span>Check the selected files and try again.</span>
+          </div>
+        ) : extractedRecord ? (
           <div className="record-grid">
             <div className="record-field">
               <span>Aadhaar number</span>
-              <strong>{extractedRecord.aadhaarNumber}</strong>
+              <strong>{extractedRecord.aadhaarNumber ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Full name</span>
-              <strong>{extractedRecord.name}</strong>
+              <strong>{extractedRecord.name ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Date of birth</span>
-              <strong>{extractedRecord.dateOfBirth}</strong>
+              <strong>{extractedRecord.dateOfBirth ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Gender</span>
-              <strong>{extractedRecord.gender}</strong>
+              <strong>{extractedRecord.gender ?? 'Not found'}</strong>
             </div>
             <div className="record-field record-field-wide">
               <span>Address</span>
-              <strong>{extractedRecord.address}</strong>
+              <strong>{extractedRecord.address ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Pincode</span>
-              <strong>{extractedRecord.pincode}</strong>
-            </div>
-            <div className="record-field">
-              <span>Confidence</span>
-              <strong>{extractedRecord.confidence}</strong>
+              <strong>{extractedRecord.pincode ?? 'Not found'}</strong>
             </div>
             <div className="record-field record-field-wide">
-              <span>Source files</span>
-              <strong>
-                {extractedRecord.sourceFiles.front} / {extractedRecord.sourceFiles.back}
-              </strong>
+              <span>Front OCR text</span>
+              <strong>{extractedRecord.rawText.front || 'No text extracted'}</strong>
+            </div>
+            <div className="record-field record-field-wide">
+              <span>Back OCR text</span>
+              <strong>{extractedRecord.rawText.back || 'No text extracted'}</strong>
             </div>
           </div>
         ) : (

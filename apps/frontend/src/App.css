@@ -249,6 +249,11 @@
   white-space: nowrap;
 }
 
+.file-row-muted {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
 .progress-row strong {
   color: var(--text-strong);
   font-weight: 600;
@@ -351,6 +356,11 @@
   color: var(--pale-blue-text);
 }
 
+.status-error {
+  background: var(--pale-red);
+  color: var(--pale-red-text);
+}
+
 .status-ready,
 .status-done {
   background: var(--pale-green);
@@ -411,6 +421,207 @@
   align-content: center;
   gap: 10px;
   color: var(--text-muted);
+}
+
+.editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.editor-dialog {
+  width: min(1040px, 100%);
+  max-height: min(92dvh, 900px);
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  display: grid;
+  gap: 24px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+}
+
+.editor-header,
+.editor-inline-actions,
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 24px;
+}
+
+.editor-preview-frame {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, var(--dropzone-tint-top), var(--dropzone-tint-bottom)),
+    var(--surface);
+  padding: 18px;
+}
+
+.editor-canvas {
+  width: 100%;
+  min-height: 420px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  display: grid;
+  place-items: center;
+  overflow: auto;
+}
+
+.editor-crop-image {
+  display: block;
+  max-width: 100%;
+  max-height: 68dvh;
+  object-fit: contain;
+}
+
+.editor-placeholder {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.ReactCrop {
+  max-width: 100%;
+}
+
+.ReactCrop__child-wrapper {
+  max-height: 68dvh;
+}
+
+.ReactCrop__crop-selection {
+  border: 1px solid color-mix(in srgb, var(--accent) 72%, white);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.32),
+    0 16px 44px rgba(15, 23, 42, 0.18);
+}
+
+.ReactCrop__drag-handle {
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+}
+
+.ReactCrop__rule-of-thirds-vt::before,
+.ReactCrop__rule-of-thirds-vt::after,
+.ReactCrop__rule-of-thirds-hz::before,
+.ReactCrop__rule-of-thirds-hz::after {
+  background-color: rgba(255, 255, 255, 0.32);
+}
+
+.editor-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.editor-controls,
+.editor-group {
+  display: grid;
+  gap: 14px;
+}
+
+.editor-controls {
+  align-content: start;
+}
+
+.editor-group {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-alt);
+}
+
+.editor-group-label {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.editor-helper {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.editor-range {
+  display: grid;
+  gap: 8px;
+}
+
+.editor-range span {
+  color: var(--text-strong);
+  font-size: 0.92rem;
+}
+
+.editor-range input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .upload-grid,
+  .results-grid,
+  .editor-layout,
+  .record-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-header,
+  .editor-inline-actions,
+  .editor-footer,
+  .workspace-header,
+  .panel-heading,
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    width: min(100% - 20px, 1240px);
+    padding-top: 20px;
+    padding-bottom: 36px;
+  }
+
+  .intro-panel,
+  .workspace,
+  .processing-panel,
+  .record-panel,
+  .editor-dialog {
+    padding: 20px;
+  }
+
+  .editor-canvas {
+    min-height: 280px;
+  }
+
+  .dropzone,
+  .preview-image {
+    min-height: 240px;
+    height: 240px;
+  }
 }
 
 .empty-record p {

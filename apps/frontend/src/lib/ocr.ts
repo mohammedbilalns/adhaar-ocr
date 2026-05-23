@@ -1,37 +1,56 @@
 export type Side = 'front' | 'back'
 
 export type UploadState = {
+  sourceFile: File | null
+  sourceUrl: string
   file: File | null
   previewUrl: string
   progress: number
   status: 'idle' | 'uploading' | 'ready'
   error: string
+  rotation: number
+  crop: CropBox
+}
+
+export type CropBox = {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export type ExtractedRecord = {
-  aadhaarNumber: string
-  name: string
-  dateOfBirth: string
-  gender: string
-  address: string
-  pincode: string
-  confidence: string
-  sourceFiles: {
+  aadhaarNumber: string | null
+  name: string | null
+  dateOfBirth: string | null
+  gender: string | null
+  address: string | null
+  pincode: string | null
+  rawText: {
     front: string
     back: string
   }
 }
 
-export type OcrStatus = 'idle' | 'processing' | 'done'
+export type OcrStatus = 'idle' | 'processing' | 'done' | 'error'
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export const initialUploadState: UploadState = {
+  sourceFile: null,
+  sourceUrl: '',
   file: null,
   previewUrl: '',
   progress: 0,
   status: 'idle',
   error: '',
+  rotation: 0,
+  crop: {
+    x: 0.08,
+    y: 0.08,
+    width: 0.84,
+    height: 0.84,
+  },
 }
 
 export const uploadLabels: Record<Side, string> = {
@@ -47,18 +66,30 @@ export function getStatusLabel(status: UploadState['status'] | 'processing' | 'd
   return 'Waiting'
 }
 
-export function buildMockRecord(frontFileName: string, backFileName: string): ExtractedRecord {
+export type AadhaarApiResponse = {
+  documentType: 'aadhaar'
+  extracted: {
+    aadhaarNumber: string | null
+    name: string | null
+    dateOfBirth: string | null
+    gender: string | null
+    address: string | null
+    pincode: string | null
+  }
+  rawText: {
+    front: string
+    back: string
+  }
+}
+
+export function mapAadhaarResponseToRecord(payload: AadhaarApiResponse): ExtractedRecord {
   return {
-    aadhaarNumber: '4587 2214 9086',
-    name: 'Riya Sharma',
-    dateOfBirth: '14 August 1996',
-    gender: 'Female',
-    address: '24 Lake View Road, Indiranagar, Bengaluru, Karnataka',
-    pincode: '560038',
-    confidence: '98.4%',
-    sourceFiles: {
-      front: frontFileName,
-      back: backFileName,
-    },
+    aadhaarNumber: payload.extracted.aadhaarNumber,
+    name: payload.extracted.name,
+    dateOfBirth: payload.extracted.dateOfBirth,
+    gender: payload.extracted.gender,
+    address: payload.extracted.address,
+    pincode: payload.extracted.pincode,
+    rawText: payload.rawText,
   }
 }

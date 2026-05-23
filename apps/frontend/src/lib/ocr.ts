@@ -20,15 +20,17 @@ export type CropBox = {
 }
 
 export type ExtractedRecord = {
-  aadhaarNumber: string | null
+  adhaarNumber: string | null
   name: string | null
-  dateOfBirth: string | null
+  dob: string | null
   gender: string | null
-  address: string | null
-  pincode: string | null
-  rawText: {
-    front: string
-    back: string
+  address: {
+    careOf: string | null
+    addressLine: string | null
+    postOffice: string | null
+    district: string | null
+    state: string | null
+    pincode: string | null
   }
 }
 
@@ -67,29 +69,36 @@ export function getStatusLabel(status: UploadState['status'] | 'processing' | 'd
 }
 
 export type AadhaarApiResponse = {
-  documentType: 'aadhaar'
-  extracted: {
-    aadhaarNumber: string | null
+  success: boolean
+  data: {
+    adhaarNumber: string | null
     name: string | null
-    dateOfBirth: string | null
+    dob: string | null
     gender: string | null
-    address: string | null
-    pincode: string | null
-  }
-  rawText: {
-    front: string
-    back: string
+    address: {
+      careOf?: string | null
+      addressLine?: string | null
+      postOffice?: string | null
+      district?: string | null
+      state?: string | null
+      pincode?: string | null
+    } | null
   }
 }
 
 export function mapAadhaarResponseToRecord(payload: AadhaarApiResponse): ExtractedRecord {
   return {
-    aadhaarNumber: payload.extracted.aadhaarNumber,
-    name: payload.extracted.name,
-    dateOfBirth: payload.extracted.dateOfBirth,
-    gender: payload.extracted.gender,
-    address: payload.extracted.address,
-    pincode: payload.extracted.pincode,
-    rawText: payload.rawText,
+    adhaarNumber: payload.data.adhaarNumber,
+    name: payload.data.name,
+    dob: payload.data.dob,
+    gender: payload.data.gender,
+    address: {
+      careOf: payload.data.address?.careOf ?? null,
+      addressLine: payload.data.address?.addressLine ?? null,
+      postOffice: payload.data.address?.postOffice ?? null,
+      district: payload.data.address?.district ?? null,
+      state: payload.data.address?.state ?? null,
+      pincode: payload.data.address?.pincode ?? null,
+    },
   }
 }

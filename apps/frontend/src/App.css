@@ -368,13 +368,17 @@
 }
 
 .results-grid {
-  grid-template-columns: minmax(320px, 0.95fr) minmax(380px, 1.05fr);
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 20px;
 }
 
 .processing-panel,
 .record-panel {
   padding: 24px;
+}
+
+.record-panel {
+  width: 100%;
 }
 
 .timeline {
@@ -421,6 +425,108 @@
   align-content: center;
   gap: 10px;
   color: var(--text-muted);
+}
+
+.loading-record {
+  display: grid;
+  gap: 18px;
+  margin-top: 26px;
+}
+
+.loading-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-header p,
+.loading-record > span {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.loading-pulse {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 34%, transparent);
+  animation: record-pulse 1.4s ease-out infinite;
+}
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.loading-block {
+  display: grid;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+.loading-block-wide {
+  grid-column: 1 / -1;
+}
+
+.loading-label,
+.loading-value {
+  display: block;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--surface-alt) 92%, transparent) 0%,
+      color-mix(in srgb, var(--surface) 70%, white) 50%,
+      color-mix(in srgb, var(--surface-alt) 92%, transparent) 100%
+    );
+  background-size: 220% 100%;
+  animation: skeleton-shift 1.4s linear infinite;
+}
+
+.loading-label {
+  width: 110px;
+  height: 10px;
+}
+
+.loading-value {
+  width: 82%;
+  height: 18px;
+}
+
+.loading-value-tall {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px;
+}
+
+@keyframes skeleton-shift {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -20% 0;
+  }
+}
+
+@keyframes record-pulse {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+
+  100% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
 }
 
 .editor-backdrop {
@@ -583,6 +689,7 @@
   .upload-grid,
   .results-grid,
   .editor-layout,
+  .loading-grid,
   .record-grid {
     grid-template-columns: 1fr;
   }

@@ -27,7 +27,7 @@ export function extractPincode(ocrText: string) {
   return extractData(ocrText.match(pincodeRegex));
 }
 
-export function extractAdress(ocrText: string) {
+export function extractAddress(ocrText: string) {
   const adressRegex = /(?<=Address:\s*?)(\b[\s\S]+?)(?=\b\d{6}\b)/i;
   return extractData(ocrText.match(adressRegex))
     .replace(/[-\n]+/g, " ")
@@ -41,7 +41,7 @@ export function extractName(ocrText: string) {
   const nameRegex = /([a-zA-Z]{4,})(?=\s+DOB\b)/;
   return extractData(ocrText.match(nameRegex));
 }
-export function extractGovermentTextBack(ocrText: string) {
+export function extractGovermentText(ocrText: string) {
   const regex = /\b(Unique\s?Identification\s?Authority\s?of\s?India)\b/i;
   return extractData(ocrText.match(regex));
 }

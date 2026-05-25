@@ -1,6 +1,7 @@
 import { ErrorMessages, HttpStatus } from "../constants";
 import { AppError } from "./app-error";
 import { extractAddress, extractAdhaarNumber, extractDOB, extractGender, extractGovermentText, extractName, extractPincode } from "./extract-data";
+import { logger } from "./logger";
 
 export function parseAdhaarTexts(ocrText1: string, ocrText2: string){
   if(!ocrText1.trim() || !ocrText2.trim()){
@@ -27,6 +28,14 @@ function parseAdhaarFront(ocrText: string){
   const adhaarNumber = extractAdhaarNumber(ocrText)
   const name = extractName(ocrText)
 
+
+  logger.debug(`
+gender: ${gender},
+dob: ${dob},
+adhaarNumber: ${adhaarNumber},
+name: ${name}
+`)
+
   if(!gender && !dob){
     throw new AppError(ErrorMessages.UPLOAD_CLEAR_IMAGE,HttpStatus.BAD_REQUEST)
   }
@@ -47,6 +56,13 @@ function parseAdhaarRear(ocrText: string){
   const adhaarNumber = extractAdhaarNumber(ocrText)
   const address =- extractAddress(ocrText)
   const pincode = extractPincode(ocrText)
+
+  logger.debug(`
+govtText: ${govtText},
+adhaarNumber: ${adhaarNumber},
+address: ${address},
+pincode: ${pincode}
+`)
 
   if(!govtText && !adhaarNumber){
     throw new AppError(ErrorMessages.UPLOAD_CLEAR_IMAGE,HttpStatus.BAD_REQUEST)

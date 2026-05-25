@@ -9,6 +9,10 @@ const EnvSchema = v.object({
   CLIENT_URL: v.pipe(
     v.string(),
     v.minLength(1),
+  ),
+  LOG_LEVEL: v.pipe(
+    v.string(),
+    v.minLength(1)
   )
 });
 

@@ -11,15 +11,17 @@ export const ocrController = asyncHandler( async (req : Request, res: Response) 
 
   const {frontFile, backFile} = validateImageFiles(files) 
 
-  const [frontText, backText] = await Promise.all([
+  const [frontData,rearData ] = await Promise.all([
     recognizeText(frontFile.buffer),
     recognizeText(backFile.buffer),
   ])
 
-  console.log("Front data: ", frontText)
-  console.log("Back data: ", backText)
+  console.log("Front data: ", frontData.text)
+  console.log("Back data: ", rearData.text)
 
-  const payload = parseAdhaarTexts(frontText, backText)
+  console.log(`Front confidence: ${frontData.confidence}, Rear Confidence: ${rearData.confidence}`)
+
+  const payload = parseAdhaarTexts(frontData.text, rearData.text)
 
   console.log("Payload: ", payload)
   res.json({

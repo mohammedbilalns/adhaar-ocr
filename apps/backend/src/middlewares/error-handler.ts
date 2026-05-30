@@ -1,15 +1,17 @@
-import { Request, Response, NextFunction } from "express";
+import { ErrorRequestHandler } from "express";
 import multer from "multer";
 import { AppError } from "../utils/app-error";
 import { ErrorMessages } from "../constants/error-messages";
+import { logger } from "../utils/logger";
 
-export const errorHandler = (
-  error: unknown,
-  _req: Request,
-  res: Response,
-  next: NextFunction
+export const errorHandler: ErrorRequestHandler = (
+  error,
+  _req,
+  res,
+  _next
 ) => {
   if (error instanceof multer.MulterError) {
+    logger.error(`[MulterError]:  ${error.message}`)
     const message =
       error.code === "LIMIT_FILE_SIZE"
         ? ErrorMessages.INVALID_FILE_SIZE
@@ -22,18 +24,17 @@ export const errorHandler = (
   }
 
   if (error instanceof AppError) {
+    logger.error(`[AppError]:  ${error.message}`)
     return res.status(error.statusCode).json({
       success: false,
       message: error.message,
     });
   }
 
-  if (error instanceof Error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
 
-  next(error);
+  logger.error(`[Error]:  ${error.message}`)
+  return res.status(500).json({
+    success: false,
+    message: ErrorMessages.INTERNAL_SERVER_ERROR,
+  });
 };

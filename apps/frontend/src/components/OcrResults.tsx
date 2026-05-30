@@ -11,57 +11,20 @@ type OcrResultsProps = {
 
 export function OcrResults({
   ocrStatus,
-  ocrProgress,
   extractedRecord,
   ocrError,
-  frontUpload,
-  backUpload,
+  ocrProgress: _ocrProgress,
+  frontUpload: _frontUpload,
+  backUpload: _backUpload,
 }: OcrResultsProps) {
   if (ocrStatus === 'idle') {
     return null
   }
 
+  const isLoading = ocrStatus === 'processing'
+
   return (
     <section className="results-grid reveal">
-      <article className="processing-panel">
-        <div className="panel-heading">
-          <div>
-            <div className="section-kicker">Process</div>
-            <h2>OCR status</h2>
-          </div>
-          <span className={`status-chip status-${ocrStatus}`}>
-            {ocrStatus === 'processing'
-              ? 'Reading card'
-              : ocrStatus === 'error'
-                ? 'Request failed'
-                : 'Extraction ready'}
-          </span>
-        </div>
-
-        <div className="timeline">
-          <div className={`timeline-item ${frontUpload.status === 'ready' ? 'active' : ''}`}>
-            Front image uploaded
-          </div>
-          <div className={`timeline-item ${backUpload.status === 'ready' ? 'active' : ''}`}>
-            Back image uploaded
-          </div>
-          <div className="timeline-item active">OCR pipeline started</div>
-          <div className={`timeline-item ${ocrStatus === 'done' ? 'active' : ''}`}>
-            Structured fields assembled
-          </div>
-        </div>
-
-        <div className="processing-meter">
-          <div className="progress-row">
-            <span>Overall progress</span>
-            <strong>{ocrProgress}%</strong>
-          </div>
-          <div className="progress-track">
-            <span className="progress-fill processing-fill" style={{ width: `${ocrProgress}%` }} />
-          </div>
-        </div>
-      </article>
-
       <article className="record-panel">
         <div className="panel-heading">
           <div>
@@ -71,15 +34,50 @@ export function OcrResults({
         </div>
 
         {ocrStatus === 'error' ? (
-          <div className="empty-record">
+          <div className="empty-record error-record">
             <p>{ocrError ?? 'Unable to process the uploaded images.'}</p>
-            <span>Check the selected files and try again.</span>
+            <span>The message above is returned by the backend when available.</span>
+          </div>
+        ) : isLoading ? (
+          <div className="loading-record">
+            <div className="loading-header">
+              <span className="loading-pulse" aria-hidden="true" />
+              <p>Reading the uploaded card.</p>
+            </div>
+            <span>Extracted fields will appear here once the OCR response is ready.</span>
+
+            <div className="loading-grid" aria-hidden="true">
+              <div className="loading-block">
+                <span className="loading-label" />
+                <span className="loading-value" />
+              </div>
+              <div className="loading-block">
+                <span className="loading-label" />
+                <span className="loading-value" />
+              </div>
+              <div className="loading-block">
+                <span className="loading-label" />
+                <span className="loading-value" />
+              </div>
+              <div className="loading-block">
+                <span className="loading-label" />
+                <span className="loading-value" />
+              </div>
+              <div className="loading-block loading-block-wide">
+                <span className="loading-label" />
+                <span className="loading-value loading-value-tall" />
+              </div>
+              <div className="loading-block">
+                <span className="loading-label" />
+                <span className="loading-value" />
+              </div>
+            </div>
           </div>
         ) : extractedRecord ? (
           <div className="record-grid">
             <div className="record-field">
               <span>Aadhaar number</span>
-              <strong>{extractedRecord.aadhaarNumber ?? 'Not found'}</strong>
+              <strong>{extractedRecord.adhaarNumber ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Full name</span>
@@ -87,7 +85,7 @@ export function OcrResults({
             </div>
             <div className="record-field">
               <span>Date of birth</span>
-              <strong>{extractedRecord.dateOfBirth ?? 'Not found'}</strong>
+              <strong>{extractedRecord.dob ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Gender</span>
@@ -100,14 +98,6 @@ export function OcrResults({
             <div className="record-field">
               <span>Pincode</span>
               <strong>{extractedRecord.pincode ?? 'Not found'}</strong>
-            </div>
-            <div className="record-field record-field-wide">
-              <span>Front OCR text</span>
-              <strong>{extractedRecord.rawText.front || 'No text extracted'}</strong>
-            </div>
-            <div className="record-field record-field-wide">
-              <span>Back OCR text</span>
-              <strong>{extractedRecord.rawText.back || 'No text extracted'}</strong>
             </div>
           </div>
         ) : (

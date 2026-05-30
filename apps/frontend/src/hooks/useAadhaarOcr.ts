@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   type AadhaarApiResponse,
+  type AadhaarApiError,
   type CropBox,
   MAX_FILE_SIZE,
   type OcrStatus,
@@ -297,12 +298,12 @@ async function runOcrRequest({
       body: formData,
     })
 
-    const payload = (await response.json()) as AadhaarApiResponse | { error?: string }
+    const payload = (await readResponseBody(response)) as AadhaarApiResponse | AadhaarApiError | null
 
-    if (!response.ok || isErrorPayload(payload)) {
+    if (!response.ok || !payload || isErrorPayload(payload)) {
       onError(
         isErrorPayload(payload)
-          ? payload.error || 'Unable to extract text from the uploaded images.'
+          ? payload.message || payload.error || 'Unable to extract text from the uploaded images.'
           : 'Unable to extract text from the uploaded images.',
       )
       return
@@ -314,8 +315,26 @@ async function runOcrRequest({
   }
 }
 
-function isErrorPayload(payload: AadhaarApiResponse | { error?: string }): payload is {
-  error?: string
-} {
-  return 'error' in payload
+async function readResponseBody(response: Response) {
+  const contentType = response.headers.get('content-type') ?? ''
+
+  if (contentType.includes('application/json')) {
+    return response.json()
+  }
+
+  const text = await response.text()
+  if (!text.trim()) {
+    return null
+  }
+
+  return {
+    success: false,
+    message: text,
+  } satisfies AadhaarApiError
+}
+
+function isErrorPayload(
+  payload: AadhaarApiResponse | AadhaarApiError | null,
+): payload is AadhaarApiError {
+  return Boolean(payload && 'success' in payload && payload.success === false)
 }

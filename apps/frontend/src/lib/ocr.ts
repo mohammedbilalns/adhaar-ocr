@@ -24,14 +24,8 @@ export type ExtractedRecord = {
   name: string | null
   dob: string | null
   gender: string | null
-  address: {
-    careOf: string | null
-    addressLine: string | null
-    postOffice: string | null
-    district: string | null
-    state: string | null
-    pincode: string | null
-  }
+  address: string | null
+  pincode: string | null
 }
 
 export type OcrStatus = 'idle' | 'processing' | 'done' | 'error'
@@ -75,15 +69,15 @@ export type AadhaarApiResponse = {
     name: string | null
     dob: string | null
     gender: string | null
-    address: {
-      careOf?: string | null
-      addressLine?: string | null
-      postOffice?: string | null
-      district?: string | null
-      state?: string | null
-      pincode?: string | null
-    } | null
+    address: string | null
+    pincode: string | null
   }
+}
+
+export type AadhaarApiError = {
+  success: false
+  message?: string
+  error?: string
 }
 
 export function mapAadhaarResponseToRecord(payload: AadhaarApiResponse): ExtractedRecord {
@@ -92,13 +86,7 @@ export function mapAadhaarResponseToRecord(payload: AadhaarApiResponse): Extract
     name: payload.data.name,
     dob: payload.data.dob,
     gender: payload.data.gender,
-    address: {
-      careOf: payload.data.address?.careOf ?? null,
-      addressLine: payload.data.address?.addressLine ?? null,
-      postOffice: payload.data.address?.postOffice ?? null,
-      district: payload.data.address?.district ?? null,
-      state: payload.data.address?.state ?? null,
-      pincode: payload.data.address?.pincode ?? null,
-    },
+    address: payload.data.address,
+    pincode: payload.data.pincode,
   }
 }

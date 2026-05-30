@@ -34,9 +34,9 @@ export function OcrResults({
         </div>
 
         {ocrStatus === 'error' ? (
-          <div className="empty-record">
+          <div className="empty-record error-record">
             <p>{ocrError ?? 'Unable to process the uploaded images.'}</p>
-            <span>Check the selected files and try again.</span>
+            <span>The message above is returned by the backend when available.</span>
           </div>
         ) : isLoading ? (
           <div className="loading-record">
@@ -93,27 +93,11 @@ export function OcrResults({
             </div>
             <div className="record-field record-field-wide">
               <span>Address</span>
-              <strong>{extractedRecord.address.addressLine ?? 'Not found'}</strong>
+              <strong>{extractedRecord.address ?? 'Not found'}</strong>
             </div>
             <div className="record-field">
               <span>Pincode</span>
-              <strong>{extractedRecord.address.pincode ?? 'Not found'}</strong>
-            </div>
-            <div className="record-field">
-              <span>Care of</span>
-              <strong>{extractedRecord.address.careOf ?? 'Not found'}</strong>
-            </div>
-            <div className="record-field">
-              <span>Post office</span>
-              <strong>{extractedRecord.address.postOffice ?? 'Not found'}</strong>
-            </div>
-            <div className="record-field">
-              <span>District</span>
-              <strong>{extractedRecord.address.district ?? 'Not found'}</strong>
-            </div>
-            <div className="record-field">
-              <span>State</span>
-              <strong>{extractedRecord.address.state ?? 'Not found'}</strong>
+              <strong>{extractedRecord.pincode ?? 'Not found'}</strong>
             </div>
           </div>
         ) : (

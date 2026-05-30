@@ -5,10 +5,34 @@ function extractData(data: string[] | null) {
   return data[1] ?? data[0];
 }
 
+function normalizeWhitespace(value: string) {
+  return value.replace(/\r/g, "").replace(/[ \t]+/g, " ").trim();
+}
+
+function cleanLine(value: string) {
+  return normalizeWhitespace(
+    value
+      .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "")
+      .replace(/[^A-Za-z0-9,./\- ]/g, " "),
+  );
+}
+
 export function extractAdhaarNumber(ocrText: string) {
   const adhaarRegex = /\b\d{4}\s?\d{4}\s?\d{4}\b/g;
+  const matches = Array.from(ocrText.matchAll(adhaarRegex));
 
-  return extractData(ocrText.match(adhaarRegex));
+  for (const match of matches) {
+    const index = match.index ?? 0;
+    const contextStart = Math.max(0, index - 12);
+    const context = ocrText.slice(contextStart, index);
+    if (/\bVID\s*:?\s*$/i.test(context.replace(/\s+/g, " "))) {
+      continue;
+    }
+
+    return match[0];
+  }
+
+  return "";
 }
 
 export function extractDOB(ocrText: string) {
@@ -28,39 +52,94 @@ export function extractPincode(ocrText: string) {
 
 
 export function extractAddress(ocrText: string) {
-  const patterns = [
-    /Address\s*:?\s*([\s\S]*?)(?=\b\d{6}\b)/i,
-    /Addres\s*:?\s*([\s\S]*?)(?=\b\d{6}\b)/i,
-    /padres\s*:?\s*([\s\S]*?)(?=\b\d{6}\b)/i,
-    /C\/O\s*:?\s*([\s\S]*?)(?=\b\d{6}\b)/i,
-    /CIO\s*:?\s*([\s\S]*?)(?=\b\d{6}\b)/i,
+  const addressStartPatterns = [
+    /\bAddress\s*:?\s*/i,
+    /\bAddres\s*:?\s*/i,
+    /\bAddr[eu]ss\s*:?\s*/i,
+    /\bC\/O\s*:?\s*/i,
+    /\bW\/O\s*:?\s*/i,
+    /\bS\/O\s*:?\s*/i,
+    /\bD\/O\s*:?\s*/i,
+    /\bCIO\s*:?\s*/i,
   ];
+  const pincodeMatch = ocrText.match(/\b\d{6}\b(?!\d)/);
 
-  for (const pattern of patterns) {
-    const match = ocrText.match(pattern);
-
-    if (match) {
-      return extractData(match)
-        .replace(/\n+/g, " ")
-        .replace(/\s{2,}/g, " ")
-        .replace(/[^a-zA-Z0-9,\/\- ]/g, "")
-        .replace(/\s*,\s*/g, ", ")
-        .trim();
+  let startIndex = -1;
+  for (const pattern of addressStartPatterns) {
+    const match = pattern.exec(ocrText);
+    if (match && (startIndex === -1 || match.index < startIndex)) {
+      startIndex = match.index;
     }
   }
 
-  return "";
+  if (startIndex === -1) {
+    return "";
+  }
+
+  const endIndex = pincodeMatch
+    ? pincodeMatch.index! + pincodeMatch[0].length
+    : ocrText.length;
+
+  const rawAddress = ocrText.slice(startIndex, endIndex);
+  const cleanedLines = rawAddress
+    .split("\n")
+    .map((line) => cleanLine(line))
+    .filter(Boolean)
+    .filter((line) => !/^(unique identification authority of india|aadhaar|help@uidai\.gov\.in|www\.uidai\.gov\.in)$/i.test(line));
+
+  const address = cleanedLines
+    .join(", ")
+    .replace(/\bAddress\s*:?\s*/i, "")
+    .replace(/\bAddres\s*:?\s*/i, "")
+    .replace(/\bAddr[eu]ss\s*:?\s*/i, "")
+    .replace(/\s*,\s*/g, ", ")
+    .replace(/,\s*,+/g, ", ")
+    .trim()
+    .replace(/[,:.\- ]+$/g, "");
+
+  return address;
 }
 export function extractName(ocrText: string) {
-  const nameRegex = /([A-Za-z]+(?:[ \t]+[A-Za-z]+)*)[ \t]*\n.*DOB\s*:/im;
+  const lines = ocrText.split("\n").map((line) => cleanLine(line));
+  const dobIndex = lines.findIndex((line) => /\bDOB\b/i.test(line));
 
-  return extractData(ocrText.match(nameRegex));
+  if (dobIndex === -1) {
+    return "";
+  }
+
+  for (let index = dobIndex - 1; index >= Math.max(0, dobIndex - 4); index -= 1) {
+    const line = lines[index];
+    if (!line) {
+      continue;
+    }
+    if (/\b(government of india|male|female|dob|year of birth|aadhaar)\b/i.test(line)) {
+      continue;
+    }
+    if ((line.match(/[A-Za-z]+/g) ?? []).length < 2) {
+      continue;
+    }
+
+    const words = line.split(" ").filter(Boolean);
+    while (words.length > 1 && (!/^[A-Za-z]+$/.test(words[0]) || words[0].length === 1)) {
+      words.shift();
+    }
+    while (
+      words.length > 2 &&
+      /^[a-z]$/.test(words[words.length - 1])
+    ) {
+      words.pop();
+    }
+
+    return words.join(" ");
+  }
+
+  return "";
 }
 
 
 export function extractGovermentText(ocrText: string) {
   const regex =
-    /(U[nm][iqg]ue\s+[I1]dentification\s+Authority\s+of\s+India|AADHAAR)/i;
+    /(U[a-z1]{4,6}\s+[I1l|]dentification\s+Authority\s+of\s+[Il]ndia|AADHAAR|UIDAI)/i;
 
   return extractData(ocrText.match(regex));
 }

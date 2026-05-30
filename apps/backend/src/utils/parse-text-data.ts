@@ -11,13 +11,10 @@ export function parseAdhaarTexts(ocrText1: string, ocrText2: string){
   const  frontData = parseAdhaarFront(ocrText1)
   const  rearData = parseAdhaarRear(ocrText2)
 
-  if(frontData.adhaarNumber !== rearData.adhaarNumber){
-    throw new AppError(ErrorMessages.IMAGE_MISMATCH,HttpStatus.BAD_REQUEST)
-  }
-
   return {
     ...frontData,
-    ...rearData
+    ...rearData,
+    adhaarNumber: frontData.adhaarNumber || rearData.adhaarNumber,
   }
 
 }
@@ -54,7 +51,7 @@ name: ${name}
 function parseAdhaarRear(ocrText: string){
   const govtText = extractGovermentText(ocrText)
   const adhaarNumber = extractAdhaarNumber(ocrText)
-  const address =- extractAddress(ocrText)
+  const address = extractAddress(ocrText)
   const pincode = extractPincode(ocrText)
 
   logger.debug(`
@@ -64,11 +61,11 @@ address: ${address},
 pincode: ${pincode}
 `)
 
-  if(!govtText && !adhaarNumber){
+  if(!govtText && !address && !pincode){
     throw new AppError(ErrorMessages.UPLOAD_CLEAR_IMAGE,HttpStatus.BAD_REQUEST)
   }
 
-  if(!govtText || !adhaarNumber){
+  if(!govtText && !address){
     throw new AppError(ErrorMessages.INVALID_AADHAAR_DOCUMENT,HttpStatus.BAD_REQUEST)
   }
   return {

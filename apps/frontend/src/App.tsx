@@ -27,12 +27,11 @@ function App() {
   return (
     <main className="page-shell">
       <div className="topbar reveal">
-        <div className="eyebrow">Aadhaar OCR workspace</div>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>
 
       <section className="intro-panel reveal">
-        <h1>Upload both sides and extract the record.</h1>
+        <h1>Upload both sides and extract the data.</h1>
       </section>
 
       <section className="workspace reveal">

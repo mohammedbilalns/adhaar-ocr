@@ -1,0 +1,15 @@
+layout {
+  pane split_direction="horizontal" {
+    pane name="frontend" {
+      command "pnpm"
+      args "--filter" "backend" "dev"
+      cwd "~/my_projects/ocr"
+    }
+
+    pane name="backend" {
+      command "pnpm"
+      args "--filter" "frontend" "dev"
+      cwd "~/my_projects/ocr"
+    }
+  }
+}

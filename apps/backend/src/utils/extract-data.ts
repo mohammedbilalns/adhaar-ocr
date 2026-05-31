@@ -17,6 +17,67 @@ function cleanLine(value: string) {
   );
 }
 
+const explicitAddressPattern = /\bAddress\b\s*:?\s*/i;
+const relationPrefixPattern = /\b(?:C\/O|CIO|D\/O|S\/O|W\/O)\b\s*:?\s*/i;
+const boilerplatePattern =
+  /^(?:unique identification authority of india|unique ldentification authority of india|aadhaar|government of india|help\s*@?uidai\.gov\.in|www\.uidai\.gov\.in)$/i;
+const addressKeywordPattern =
+  /\b(?:flat|house|hno|house no|ward|sector|block|street|road|lane|village|colony|locality|area|district|tehsil|taluka|town|city|state|po|post|pincode|pin|near|opp|behind|vpo|mohalla|gali|nagar|vihar)\b/i;
+const highwayPattern = /\b(?:NH|SH)\s*[-/]?\s*\d+\b/i;
+const pincodePattern = /\b\d{6}\b(?!\d)/;
+
+function splitAddressSegments(line: string) {
+  return line
+    .split(",")
+    .map((segment) => {
+      const normalized = cleanLine(segment);
+      const pincodeMatch = normalized.match(pincodePattern);
+
+      if (pincodeMatch?.index !== undefined) {
+        return normalized.slice(0, pincodeMatch.index + pincodeMatch[0].length).trim();
+      }
+
+      return normalized;
+    })
+    .filter(Boolean);
+}
+
+function isBoilerplateLine(line: string) {
+  return boilerplatePattern.test(line);
+}
+
+function isLikelyAddressSegment(segment: string) {
+  if (!segment || isBoilerplateLine(segment)) {
+    return false;
+  }
+
+  if (relationPrefixPattern.test(segment)) {
+    return true;
+  }
+
+  if (pincodePattern.test(segment)) {
+    return true;
+  }
+
+  if (addressKeywordPattern.test(segment)) {
+    return true;
+  }
+
+  if (highwayPattern.test(segment)) {
+    return true;
+  }
+
+  const words = segment.split(" ").filter(Boolean);
+
+  if (words.length <= 2) {
+    return words.some((word) => /[A-Za-z0-9]/.test(word));
+  }
+
+  return words.every(
+    (word) => /^[A-Z][A-Za-z.'-]*$/.test(word) || /^[A-Z0-9]+$/.test(word),
+  );
+}
+
 export function extractAdhaarNumber(ocrText: string) {
   const adhaarRegex = /\b\d{4}\s?\d{4}\s?\d{4}\b/g;
   const matches = Array.from(ocrText.matchAll(adhaarRegex));
@@ -52,90 +113,79 @@ export function extractPincode(ocrText: string) {
 
 
 export function extractAddress(ocrText: string) {
-  const explicitAddressPatterns = [
-    /\bAddress\s*:?\s*/i,
-    /\bAddres\s*:?\s*/i,
-    /\bAddr[eu]ss\s*:?\s*/i,
-  ];
+  const lines = ocrText
+    .split("\n")
+    .map((line) => normalizeWhitespace(line.split(/\s{3,}/)[0] ?? line))
+    .map((line) => cleanLine(line))
+    .filter(Boolean);
 
-  const fallbackPatterns = [
-    /\bC\/O\s*:?\s*/i,
-    /\bW\/O\s*:?\s*/i,
-    /\bS\/O\s*:?\s*/i,
-    /\bD\/O\s*:?\s*/i,
-    /\bCIO\s*:?\s*/i,
-  ];
-
-  let startIndex = -1;
-
-  for (const pattern of explicitAddressPatterns) {
-    const match = pattern.exec(ocrText);
-    if (match && (startIndex === -1 || match.index < startIndex)) {
-      startIndex = match.index;
-    }
-  }
-
-  if (startIndex === -1) {
-    let lastFallbackIndex = -1;
-    for (const pattern of fallbackPatterns) {
-      const globalPattern = new RegExp(pattern.source, "ig");
-      const matches = Array.from(ocrText.matchAll(globalPattern));
-      if (matches.length > 0) {
-        const lastMatch = matches[matches.length - 1];
-        if (lastMatch.index > lastFallbackIndex) {
-          lastFallbackIndex = lastMatch.index;
-        }
-      }
-    }
-    startIndex = lastFallbackIndex;
-  }
-
-  if (startIndex === -1) {
+  if (lines.length === 0) {
     return "";
   }
 
-  const pincodeRegex = /\b\d{6}\b(?!\d)/g;
-  let endIndex = ocrText.length;
-  
-  const matches = Array.from(ocrText.matchAll(pincodeRegex));
-  const validPincodeMatch = matches.find((m) => m.index !== undefined && m.index > startIndex);
-  
-  if (validPincodeMatch) {
-    endIndex = validPincodeMatch.index! + validPincodeMatch[0].length;
-  } else if (matches.length > 0) {
-    const lastPincode = matches[matches.length - 1];
-    if (lastPincode.index! + lastPincode[0].length > startIndex) {
-       endIndex = lastPincode.index! + lastPincode[0].length;
+  const pincodeIndices = lines
+    .map((line, index) => (pincodePattern.test(line) ? index : -1))
+    .filter((index) => index !== -1);
+
+  const endIndex = pincodeIndices.length > 0 ? pincodeIndices[pincodeIndices.length - 1] : lines.length - 1;
+
+  let startIndex = -1;
+
+  for (let index = endIndex; index >= 0; index -= 1) {
+    if (relationPrefixPattern.test(lines[index])) {
+      startIndex = index;
+      break;
     }
   }
 
-  const rawAddress = ocrText.slice(startIndex, endIndex);
-  const cleanedLines = rawAddress
-    .split("\n")
-    .map((line) => {
-      // Aadhaar cards often have noise (like QR code text) on the right side,
-      // separated by a large gap of spaces. We take the left side.
-      const parts = line.split(/\s{3,}/);
-      let cleaned = cleanLine(parts[0]);
-      
-      // Remove explicit "Address" keywords from the line itself
-      cleaned = cleaned
-        .replace(/\baddres{1,2}\b/i, "")
-        .replace(/\baddr[eu]ss\b/i, "")
-        .trim();
-        
-      // Remove any leading or trailing punctuation that might be left over (like commas or colons)
-      cleaned = cleaned.replace(/^[,:.\- ]+|[,:.\- ]+$/g, "");
-      
-      return cleaned;
-    })
-    .filter(Boolean)
-    .filter((line) => !/^(unique identification authority of india|aadhaar|help@uidai\.gov\.in|www\.uidai\.gov\.in)$/i.test(line));
+  if (startIndex === -1) {
+    for (let index = endIndex; index >= 0; index -= 1) {
+      if (explicitAddressPattern.test(lines[index])) {
+        const addressLabelTail = lines[index].replace(explicitAddressPattern, "").trim();
 
-  const address = cleanedLines
+        if (
+          addressLabelTail &&
+          (relationPrefixPattern.test(addressLabelTail) ||
+            pincodePattern.test(addressLabelTail) ||
+            addressKeywordPattern.test(addressLabelTail) ||
+            addressLabelTail.includes(","))
+        ) {
+          startIndex = index;
+        } else {
+          startIndex = Math.min(index + 1, lines.length);
+        }
+        break;
+      }
+    }
+  }
+
+  if (startIndex === -1 || startIndex >= lines.length || startIndex > endIndex) {
+    return "";
+  }
+
+  const addressSegments: string[] = [];
+
+  for (let index = startIndex; index <= endIndex; index += 1) {
+    const line = lines[index];
+
+    if (!line || isBoilerplateLine(line)) {
+      continue;
+    }
+
+    const lineWithoutLabel = line.replace(explicitAddressPattern, "").trim();
+
+    for (const segment of splitAddressSegments(lineWithoutLabel)) {
+      if (isLikelyAddressSegment(segment)) {
+        addressSegments.push(segment);
+      }
+    }
+  }
+
+  const address = addressSegments
     .join(", ")
     .replace(/\s*,\s*/g, ", ")
     .replace(/,\s*,+/g, ", ")
+    .replace(/\s{2,}/g, " ")
     .trim()
     .replace(/^[,:.\- ]+|[,:.\- ]+$/g, "");
 

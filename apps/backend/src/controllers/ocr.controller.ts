@@ -4,7 +4,7 @@ import { OcrMulterRequest } from '../utils/types'
 import { validateImageFiles } from '../utils/validate-files'
 import { parseAdhaarTexts } from '../utils/parse-text-data'
 import { asyncHandler } from '../utils/async-handler'
-import { preProcessImage } from '../utils/preprocess-image'
+import { preProcessFrontImage,preProcessRearImage } from '../utils/preprocess-image'
 import { logger } from '../utils/logger'
 import { ErrorMessages, HttpStatus } from "../constants";
 import { AppError } from "../utils/app-error";
@@ -16,8 +16,8 @@ export const ocrController = asyncHandler(async (req: Request, res: Response) =>
 
 
   const processedImages = await Promise.all([
-    preProcessImage(frontFile.buffer),
-    preProcessImage(backFile.buffer),
+    preProcessFrontImage(frontFile.buffer),
+    preProcessRearImage(backFile.buffer),
   ])
   const [frontData, rearData] = await Promise.all([
     recognizeText(processedImages[0]),

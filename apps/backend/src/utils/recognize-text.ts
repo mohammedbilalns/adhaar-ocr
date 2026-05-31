@@ -6,13 +6,13 @@ async function getWorker() {
   if (!worker) {
     worker = await createWorker("eng");
 
-    await worker.setParameters({
-      tessedit_char_whitelist:
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,-:/',
-      preserve_interword_spaces: '1'
-      //tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-      // preserve_interword_spaces: "1",
-    });
+    // await worker.setParameters({
+    //   tessedit_char_whitelist:
+    //   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,-:/',
+    //   preserve_interword_spaces: '1'
+    //   //tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+    //   // preserve_interword_spaces: "1",
+    // });
   }
 
   return worker;

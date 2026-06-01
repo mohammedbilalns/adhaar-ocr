@@ -27,11 +27,20 @@ function App() {
   return (
     <main className="page-shell">
       <div className="topbar reveal">
+        <div className="project-brand">
+          <h1>Aadhaar OCR</h1>
+          <p>Upload both sides, refine the crop, and extract structured details.</p>
+        </div>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>
 
       <section className="intro-panel reveal">
-        <h1>Upload both sides and extract the data.</h1>
+        <div className="workflow-steps" aria-label="Workflow steps">
+          <span className="workflow-step is-active">1. Upload cards</span>
+          <span className="workflow-step">2. Adjust image</span>
+          <span className="workflow-step">3. Extract text</span>
+        </div>
+        <p className="intro-copy">Upload both sides, refine the crop, and extract structured details.</p>
       </section>
 
       <section className="workspace reveal">

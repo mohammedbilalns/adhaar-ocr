@@ -5,6 +5,7 @@ import { env } from "./utils/env";
 import { ocrRouter } from "./routes/ocr";
 import { errorHandler } from "./middlewares/error-handler";
 import { logger } from "./utils/logger";
+import { HttpStatus } from "./constants";
 
 process.on("uncaughtException", (error) => {
   logger.fatal({ err: error }, "Uncaught Exception");
@@ -28,6 +29,13 @@ app.get("/test", (_req, res) => {
 });
 
 app.use("/ocr", ocrRouter);
+
+app.use((req, res) => {
+  res.status(HttpStatus.NOT_FOUND).json({
+    success: false,
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+  });
+});
 app.use(errorHandler);
 
 const server = app.listen(env.PORT, () => {

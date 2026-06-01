@@ -1,29 +1,12 @@
-import * as v from "valibot";
+const parsedPort = Number(process.env.PORT ?? "3000");
 
-const EnvSchema = v.object({
-  PORT: v.pipe(
-    v.string(),
-    v.transform(Number),
-    v.number()
-  ),
-  CLIENT_URL: v.pipe(
-    v.string(),
-    v.minLength(1),
-  ),
-  LOG_LEVEL: v.pipe(
-    v.string(),
-    v.minLength(1)
-  )
-});
-
-const result = v.safeParse(EnvSchema, process.env);
-
-if (!result.success) {
-  console.error("Invalid environment variables:");
-
-  console.error(v.flatten(result.issues));
-
+if (!Number.isFinite(parsedPort) || parsedPort <= 0) {
+  console.error("Invalid PORT environment variable");
   process.exit(1);
 }
 
-export const env = result.output;
+export const env = {
+  PORT: parsedPort,
+  CLIENT_URL: process.env.CLIENT_URL?.trim() || "*",
+  LOG_LEVEL: process.env.LOG_LEVEL?.trim() || "info",
+};

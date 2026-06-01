@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  type AadhaarApiResponse,
-  type AadhaarApiError,
   type CropBox,
   MAX_FILE_SIZE,
   type OcrStatus,
@@ -11,6 +9,7 @@ import {
   type Side,
   type UploadState,
 } from '../lib/ocr'
+import { requestAadhaarOcr } from '../services/ocr.service'
 
 type UploadMap = Record<Side, UploadState>
 type EditorState = {
@@ -219,10 +218,8 @@ export function useAadhaarOcr() {
       setOcrProgress((current) => Math.min(current + 6, 92))
     }, 180)
 
-    void runOcrRequest({
-      frontFile: uploads.front.file,
-      backFile: uploads.back.file,
-      onSuccess: (payload) => {
+    void requestAadhaarOcr(uploads.front.file, uploads.back.file)
+      .then((payload) => {
         if (ocrTimer.current) {
           window.clearInterval(ocrTimer.current)
           ocrTimer.current = null
@@ -231,8 +228,8 @@ export function useAadhaarOcr() {
         setOcrProgress(100)
         setOcrStatus('done')
         setExtractedRecord(mapAadhaarResponseToRecord(payload))
-      },
-      onError: (message) => {
+      })
+      .catch((error: unknown) => {
         if (ocrTimer.current) {
           window.clearInterval(ocrTimer.current)
           ocrTimer.current = null
@@ -240,9 +237,12 @@ export function useAadhaarOcr() {
 
         setOcrProgress(0)
         setOcrStatus('error')
-        setOcrError(message)
-      },
-    })
+        setOcrError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to reach the OCR service. Check that the backend is running.',
+        )
+      })
   }
 
   return {
@@ -274,67 +274,4 @@ export function useAadhaarOcr() {
     URL.revokeObjectURL(url)
     objectUrls.current = objectUrls.current.filter((entry) => entry !== url)
   }
-}
-
-async function runOcrRequest({
-  frontFile,
-  backFile,
-  onSuccess,
-  onError,
-}: {
-  frontFile: File
-  backFile: File
-  onSuccess: (payload: AadhaarApiResponse) => void
-  onError: (message: string) => void
-}) {
-  try {
-    const formData = new FormData()
-    formData.append('front', frontFile)
-    formData.append('back', backFile)
-
-    const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:3000'
-    const response = await fetch(`${apiBaseUrl}/ocr/aadhaar`, {
-      method: 'POST',
-      body: formData,
-    })
-
-    const payload = (await readResponseBody(response)) as AadhaarApiResponse | AadhaarApiError | null
-
-    if (!response.ok || !payload || isErrorPayload(payload)) {
-      onError(
-        isErrorPayload(payload)
-          ? payload.message || payload.error || 'Unable to extract text from the uploaded images.'
-          : 'Unable to extract text from the uploaded images.',
-      )
-      return
-    }
-
-    onSuccess(payload)
-  } catch {
-    onError('Unable to reach the OCR service. Check that the backend is running.')
-  }
-}
-
-async function readResponseBody(response: Response) {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (contentType.includes('application/json')) {
-    return response.json()
-  }
-
-  const text = await response.text()
-  if (!text.trim()) {
-    return null
-  }
-
-  return {
-    success: false,
-    message: text,
-  } satisfies AadhaarApiError
-}
-
-function isErrorPayload(
-  payload: AadhaarApiResponse | AadhaarApiError | null,
-): payload is AadhaarApiError {
-  return Boolean(payload && 'success' in payload && payload.success === false)
 }

@@ -107,7 +107,8 @@ export function extractGender(ocrText: string) {
 }
 
 export function extractPincode(ocrText: string) {
-  const pincodeRegex = /\b\d{6}\b(?!\d)/g;
+  //const pincodeRegex = /\b\d{6}\b(?!\d)/g;
+  const pincodeRegex = /\b\d{6}\b/g;
   return extractData(ocrText.match(pincodeRegex));
 }
 
@@ -191,76 +192,41 @@ export function extractAddress(ocrText: string) {
 
   return address;
 }
-export function extractName(ocrText: string) {
-  const rawLines = ocrText.split("\n");
-  const cleanedLines = rawLines.map((line) => cleanLine(line));
-  const dobIndex = cleanedLines.findIndex((line) => /\bDOB\b/i.test(line));
 
-  if (dobIndex === -1) {
-    return "";
-  }
+export function extractName(frontText: string): string | null {
+  const dobIndex = frontText.search(/DOB\s*:?\s*\d{2}\/\d{2}\/\d{4}/i);
 
-  for (let index = dobIndex - 1; index >= Math.max(0, dobIndex - 4); index -= 1) {
-    const rawLine = rawLines[index];
-    const cleanedLine = cleanedLines[index];
-    
-    if (!cleanedLine) {
-      continue;
-    }
-    if (/\b(government of india|male|female|dob|year of birth|aadhaar)\b/i.test(cleanedLine)) {
-      continue;
-    }
+  if (dobIndex === -1) return null;
 
-    // Isolate the name block from left/right noise using large space gaps
-    const parts = rawLine.split(/\s{3,}/).map(cleanLine).filter(Boolean);
-    
-    const validParts = parts.filter(part => {
-        const words = part.split(" ");
-        const validWords = words.filter(w => /^[A-Za-z]+$/.test(w) && w.length >= 2);
-        return validWords.length > 0;
-    });
+  const beforeDob = frontText.slice(0, dobIndex);
 
-    if (validParts.length > 0) {
-        // Take the longest valid block as the name
-        validParts.sort((a, b) => b.length - a.length);
-        const bestPart = validParts[0];
+  const matches = [
+    ...beforeDob.matchAll(
+      /\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){1,3})\b/g
+    ),
+  ];
 
-        const words = bestPart.split(" ").filter(Boolean);
-        while (words.length > 1 && (!/^[A-Za-z]+$/.test(words[0]) || words[0].length === 1)) {
-          words.shift();
-        }
-        while (
-          words.length > 1 &&
-          (!/^[A-Za-z]+$/.test(words[words.length - 1]) || words[words.length - 1].length === 1)
-        ) {
-          words.pop();
-        }
+  if (!matches.length) return null;
 
-        return words.join(" ");
-    }
-    
-    // Fallback logic
-    if ((cleanedLine.match(/[A-Za-z]+/g) ?? []).length < 2) {
-      continue;
-    }
+  const blacklist = [
+    "Government Of India",
+    "Unique Identification Authority",
+  ];
 
-    const words = cleanedLine.split(" ").filter(Boolean);
-    while (words.length > 1 && (!/^[A-Za-z]+$/.test(words[0]) || words[0].length === 1)) {
-      words.shift();
-    }
-    while (
-      words.length > 2 &&
-      /^[A-Za-z]$/.test(words[words.length - 1])
-    ) {
-      words.pop();
-    }
+  const validMatches = matches
+    .map((m) => m[1].trim())
+    .filter(
+      (name) =>
+        !blacklist.some(
+          (blocked) =>
+            name.toLowerCase() === blocked.toLowerCase()
+        )
+    );
 
-    return words.join(" ");
-  }
+  if (!validMatches.length) return null;
 
-  return "";
+  return validMatches[validMatches.length - 1];
 }
-
 
 export function extractGovermentText(ocrText: string) {
   const regex =

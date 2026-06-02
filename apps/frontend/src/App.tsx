@@ -18,7 +18,6 @@ function App() {
     canStartOcr,
     selectFile,
     removeFile,
-    openEditor,
     cancelEditing,
     saveEditing,
     startOcr,
@@ -57,14 +56,12 @@ function App() {
             upload={uploads.front}
             onFileSelect={selectFile}
             onRemove={removeFile}
-            onEdit={openEditor}
           />
           <UploadCard
             side="back"
             upload={uploads.back}
             onFileSelect={selectFile}
             onRemove={removeFile}
-            onEdit={openEditor}
           />
         </div>
 
@@ -96,7 +93,6 @@ function App() {
           isOpen={Boolean(editor)}
           side={editor.side}
           imageUrl={editor.sourceUrl}
-          fileName={editor.fileName}
           initialRotation={editor.rotation}
           initialCrop={editor.crop}
           onCancel={cancelEditing}

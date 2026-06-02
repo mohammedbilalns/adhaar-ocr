@@ -378,39 +378,6 @@
   border-top: 1px solid var(--border);
 }
 
-.status-chip {
-  align-self: flex-start;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.status-idle {
-  background: var(--surface-alt);
-  color: var(--text-muted);
-}
-
-.status-uploading,
-.status-processing {
-  background: var(--pale-blue);
-  color: var(--pale-blue-text);
-}
-
-.status-error {
-  background: var(--pale-red);
-  color: var(--pale-red-text);
-}
-
-.status-ready,
-.status-done {
-  background: var(--pale-green);
-  color: var(--pale-green-text);
-}
-
 .results-grid {
   grid-template-columns: minmax(0, 1fr);
   margin-top: 16px;

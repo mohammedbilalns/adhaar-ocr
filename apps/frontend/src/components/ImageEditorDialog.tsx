@@ -11,26 +11,16 @@ type ImageEditorDialogProps = {
   isOpen: boolean
   side: Side
   imageUrl: string
-  fileName: string
   initialRotation: number
   initialCrop: CropBox
   onCancel: () => void
   onSave: (payload: { rotation: number; crop: CropBox; file: File; previewUrl: string }) => void
 }
 
-const DEFAULT_CROP: PercentCrop = {
-  unit: '%',
-  x: 8,
-  y: 8,
-  width: 84,
-  height: 84,
-}
-
 export function ImageEditorDialog({
   isOpen,
   side,
   imageUrl,
-  fileName,
   initialRotation,
   initialCrop,
   onCancel,
@@ -109,11 +99,6 @@ export function ImageEditorDialog({
 
   const handleRotate = (delta: number) => {
     setRotation((current) => ((current + delta) % 360 + 360) % 360)
-    setCrop(createDefaultCrop())
-  }
-
-  const handleResetCrop = () => {
-    setCrop(createDefaultCrop())
   }
 
   const handleSave = async () => {
@@ -128,7 +113,6 @@ export function ImageEditorDialog({
       const pixelCrop = convertToPixelCrop(crop as Crop, displaySize.width, displaySize.height)
       const file = await createProcessedFile({
         imageUrl: displayUrl,
-        fileName,
         pixelCrop,
       })
       const previewUrl = URL.createObjectURL(file)
@@ -194,21 +178,11 @@ export function ImageEditorDialog({
                   Rotate right
                 </button>
               </div>
-              <p className="editor-helper">Drag the rectangle to move it. Pull the corners or edges to resize.</p>
             </div>
 
             <div className="editor-group">
               <div className="editor-group-label">Selection</div>
-              <p className="editor-helper">
-                Crop area: {Math.round(crop.width ?? 0)}% x {Math.round(crop.height ?? 0)}%
-              </p>
-              <button
-                type="button"
-                className="card-action"
-                onClick={handleResetCrop}
-              >
-                Reset crop
-              </button>
+              <p className="editor-helper">Drag the rectangle to move it. Pull the corners or edges to resize.</p>
             </div>
 
             {saveError ? <p className="field-error">{saveError}</p> : null}
@@ -244,11 +218,9 @@ async function createRotatedPreview(imageUrl: string, rotation: number) {
 
 async function createProcessedFile({
   imageUrl,
-  fileName,
   pixelCrop,
 }: {
   imageUrl: string
-  fileName: string
   pixelCrop: Crop
 }) {
   const image = await loadImage(imageUrl)
@@ -279,7 +251,7 @@ async function createProcessedFile({
   )
 
   const blob = await canvasToBlob(outputCanvas)
-  return new File([blob], normalizeFileName(fileName), { type: 'image/jpeg' })
+  return new File([blob], normalizeFileName(), { type: 'image/jpeg' })
 }
 
 function drawRotatedImage(image: HTMLImageElement, rotation: number) {
@@ -327,9 +299,8 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
   })
 }
 
-function normalizeFileName(fileName: string) {
-  const stem = fileName.replace(/\.[^/.]+$/, '')
-  return `${stem}-edited.jpg`
+function normalizeFileName() {
+  return 'image 1.jpg'
 }
 
 function toPercentCrop(crop: CropBox): PercentCrop {
@@ -340,10 +311,6 @@ function toPercentCrop(crop: CropBox): PercentCrop {
     width: crop.width * 100,
     height: crop.height * 100,
   }
-}
-
-function createDefaultCrop(): PercentCrop {
-  return { ...DEFAULT_CROP }
 }
 
 function fromPercentCrop(crop: PercentCrop): CropBox {

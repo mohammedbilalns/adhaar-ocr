@@ -54,14 +54,6 @@ export const uploadLabels: Record<Side, string> = {
   back: 'Back side',
 }
 
-export function getStatusLabel(status: UploadState['status'] | 'processing' | 'done') {
-  if (status === 'uploading') return 'Uploading'
-  if (status === 'ready') return 'Ready'
-  if (status === 'processing') return 'Processing'
-  if (status === 'done') return 'Complete'
-  return 'Waiting'
-}
-
 export type AadhaarApiResponse = {
   success: boolean
   data: {

@@ -1,15 +1,14 @@
 import { useId, useRef, useState, type DragEvent, type KeyboardEvent } from 'react'
-import { getStatusLabel, uploadLabels, type Side, type UploadState } from '../lib/ocr'
+import { uploadLabels, type Side, type UploadState } from '../lib/ocr'
 
 type UploadCardProps = {
   side: Side
   upload: UploadState
   onFileSelect: (side: Side, file: File | null) => void
   onRemove: (side: Side) => void
-  onEdit: (side: Side) => void
 }
 
-export function UploadCard({ side, upload, onFileSelect, onRemove, onEdit }: UploadCardProps) {
+export function UploadCard({ side, upload, onFileSelect, onRemove }: UploadCardProps) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragActive, setIsDragActive] = useState(false)
@@ -56,9 +55,6 @@ export function UploadCard({ side, upload, onFileSelect, onRemove, onEdit }: Upl
           <span className="card-kicker">{uploadLabels[side]}</span>
           <h3>{side === 'front' ? 'Identity face' : 'Address face'}</h3>
         </div>
-        <span className={`status-chip status-${upload.status}`}>
-          {getStatusLabel(upload.status)}
-        </span>
       </div>
 
       <input
@@ -114,14 +110,6 @@ export function UploadCard({ side, upload, onFileSelect, onRemove, onEdit }: Upl
         <button
           type="button"
           className="card-action"
-          onClick={() => onEdit(side)}
-          disabled={!upload.sourceFile}
-        >
-          Re-edit
-        </button>
-        <button
-          type="button"
-          className="card-action"
           onClick={handleRemoveClick}
           disabled={!upload.file && !upload.error}
         >
@@ -133,14 +121,6 @@ export function UploadCard({ side, upload, onFileSelect, onRemove, onEdit }: Upl
         <div className="file-row">
           <span>{upload.file?.name ?? 'No file selected'}</span>
         </div>
-        {upload.file ? (
-          <div className="file-row file-row-muted">
-            <span>
-              Rotation {upload.rotation}° | Crop {Math.round(upload.crop.width * 100)}% x{' '}
-              {Math.round(upload.crop.height * 100)}%
-            </span>
-          </div>
-        ) : null}
         {upload.error ? <p className="field-error">{upload.error}</p> : null}
       </div>
     </article>

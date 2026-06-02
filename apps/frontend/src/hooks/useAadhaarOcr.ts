@@ -16,7 +16,6 @@ type EditorState = {
   side: Side
   sourceFile: File
   sourceUrl: string
-  fileName: string
   rotation: number
   crop: CropBox
 }
@@ -86,7 +85,6 @@ export function useAadhaarOcr() {
       side,
       sourceFile: file,
       sourceUrl,
-      fileName: file.name,
       rotation: 0,
       crop: initialUploadState.crop,
     })
@@ -111,23 +109,6 @@ export function useAadhaarOcr() {
       ...current,
       [side]: initialUploadState,
     }))
-  }
-
-  const openEditor = (side: Side) => {
-    const upload = uploads[side]
-
-    if (!upload.sourceFile || !upload.sourceUrl) {
-      return
-    }
-
-    setEditor({
-      side,
-      sourceFile: upload.sourceFile,
-      sourceUrl: upload.sourceUrl,
-      fileName: upload.sourceFile.name,
-      rotation: upload.rotation,
-      crop: upload.crop,
-    })
   }
 
   const cancelEditing = () => {
@@ -255,7 +236,6 @@ export function useAadhaarOcr() {
     canStartOcr,
     selectFile,
     removeFile,
-    openEditor,
     cancelEditing,
     saveEditing,
     startOcr,

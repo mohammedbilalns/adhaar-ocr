@@ -1,23 +1,21 @@
 import { Request, Response } from 'express'
-import { recognizeText } from '../utils/recognize-text'
 import { OcrMulterRequest } from '../utils/types'
 import { validateImageFiles } from '../utils/validate-files'
 import { parseAdhaarTexts } from '../utils/parse-text-data'
 import { asyncHandler } from '../utils/async-handler'
-import { preProcessFrontImage,preProcessRearImage } from '../utils/preprocess-image'
 import { logger } from '../utils/logger'
 import { ErrorMessages, HttpStatus } from "../constants";
 import { AppError } from "../utils/app-error";
+import { preprocessFrontImage, preprocessRearImage, recognizeText } from '../services'
 
 export const ocrController = asyncHandler(async (req: Request, res: Response) => {
   const files = (req as OcrMulterRequest).files
 
   const { frontFile, backFile } = validateImageFiles(files)
 
-
   const processedImages = await Promise.all([
-    preProcessFrontImage(frontFile.buffer),
-    preProcessRearImage(backFile.buffer),
+    preprocessFrontImage(frontFile.buffer),
+    preprocessRearImage(backFile.buffer),
   ])
   const [frontData, rearData] = await Promise.all([
     recognizeText(processedImages[0]),
@@ -41,7 +39,7 @@ export const ocrController = asyncHandler(async (req: Request, res: Response) =>
 
   const payload = parseAdhaarTexts(frontData.text, rearData.text)
 
-  console.log("Payload: ", payload)
+  logger.debug(`Payload: ${JSON.stringify(payload)}`)
   res.json({
     success: true,
     data: payload

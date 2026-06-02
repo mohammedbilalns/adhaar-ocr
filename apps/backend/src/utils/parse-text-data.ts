@@ -1,6 +1,6 @@
 import { ErrorMessages, HttpStatus } from "../constants";
 import { AppError } from "./app-error";
-import { extractAddress, extractAdhaarNumber, extractDOB, extractGender, extractGovermentText, extractName, extractPincode } from "./extract-data";
+import { extractAddress, extractAdhaarNumber, extractDOB, extractGender, extractGovermentText, extractPincode,extractName } from "../services/parsers";
 import { logger } from "./logger";
 
 export function parseAdhaarTexts(ocrText1: string, ocrText2: string){

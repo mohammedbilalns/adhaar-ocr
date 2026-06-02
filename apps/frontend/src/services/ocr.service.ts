@@ -1,6 +1,5 @@
 import type { AadhaarApiResponse, AadhaarApiError } from '../lib/ocr'
 
-const LOCAL_API_URL = 'http://localhost:3000'
 const DEFAULT_ERROR_MESSAGE = 'Unable to extract text from the uploaded images.'
 
 export async function requestAadhaarOcr(frontFile: File, backFile: File): Promise<AadhaarApiResponse> {
@@ -29,17 +28,11 @@ export async function requestAadhaarOcr(frontFile: File, backFile: File): Promis
 }
 
 function resolveApiBaseUrl() {
-  const apiBaseUrl = import.meta.env.VITE_API_URL?.trim()
-
-  if (apiBaseUrl) {
-    return apiBaseUrl
+  const apiBaseUrl = import.meta.env.VITE_API_URL
+  if(!apiBaseUrl) {
+    throw new Error('VITE_API_URL environment variable is not set.')
   }
-
-  if (import.meta.env.DEV) {
-    return LOCAL_API_URL
-  }
-
-  throw new Error('Missing VITE_API_URL for the frontend build.')
+  return apiBaseUrl
 }
 
 async function readResponseBody(response: Response) {

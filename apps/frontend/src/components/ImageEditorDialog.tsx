@@ -224,10 +224,13 @@ async function createProcessedFile({
   pixelCrop: Crop
 }) {
   const image = await loadImage(imageUrl)
-  const cropWidth = Math.max(1, Math.round(pixelCrop.width ?? image.width))
-  const cropHeight = Math.max(1, Math.round(pixelCrop.height ?? image.height))
-  const cropX = Math.max(0, Math.round(pixelCrop.x ?? 0))
-  const cropY = Math.max(0, Math.round(pixelCrop.y ?? 0))
+  const cropX = Math.max(0, Math.floor(pixelCrop.x ?? 0))
+  const cropY = Math.max(0, Math.floor(pixelCrop.y ?? 0))
+  const cropWidth = Math.max(1, Math.min(image.width - cropX, Math.ceil(pixelCrop.width ?? image.width)))
+  const cropHeight = Math.max(
+    1,
+    Math.min(image.height - cropY, Math.ceil(pixelCrop.height ?? image.height)),
+  )
 
   const outputCanvas = document.createElement('canvas')
   outputCanvas.width = cropWidth

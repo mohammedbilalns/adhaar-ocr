@@ -223,8 +223,9 @@
 
 .preview-image {
   width: 100%;
-  height: 260px;
-  object-fit: cover;
+  height: auto;
+  max-height: 260px;
+  object-fit: contain;
   display: block;
 }
 
@@ -766,7 +767,6 @@
   .dropzone,
   .preview-image {
     min-height: 240px;
-    height: 240px;
   }
 
   .upload-actions {
@@ -810,6 +810,5 @@
   .dropzone,
   .preview-image {
     min-height: 240px;
-    height: 240px;
   }
 }

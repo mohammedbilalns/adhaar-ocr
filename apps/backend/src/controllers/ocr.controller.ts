@@ -44,5 +44,4 @@ export const ocrController = asyncHandler(async (req: Request, res: Response) =>
     success: true,
     data: payload
   })
-
 })

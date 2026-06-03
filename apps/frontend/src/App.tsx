@@ -28,7 +28,7 @@ function App() {
       <div className="topbar reveal">
         <div className="project-brand">
           <h1>Aadhaar OCR</h1>
-          <p>Upload both sides, refine the crop, and extract structured details.</p>
+          <p>Upload both sides, refine the crop, and extract details.</p>
         </div>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>

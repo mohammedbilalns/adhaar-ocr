@@ -44,7 +44,6 @@ export function OcrResults({
               <span className="loading-pulse" aria-hidden="true" />
               <p>Reading the uploaded card.</p>
             </div>
-            <span>Extracted fields will appear here once the OCR response is ready.</span>
 
             <div className="loading-grid" aria-hidden="true">
               <div className="loading-block">
@@ -103,7 +102,6 @@ export function OcrResults({
         ) : (
           <div className="empty-record">
             <p>Reading the uploaded card.</p>
-            <span>Structured fields will appear here when OCR completes.</span>
           </div>
         )}
       </article>

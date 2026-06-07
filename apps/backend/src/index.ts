@@ -1,47 +1,22 @@
-import express from "express";
-import cors from "cors";
-import morgan from "morgan";
-import helmet from "helmet";
-import { env } from "./utils/env";
-import { ocrRouter } from "./routes/ocr";
-import { errorHandler } from "./middlewares/error-handler";
 import { logger } from "./utils/logger";
-import { HttpStatus } from "./constants";
+import App from "./app";
+import { env } from "./utils/env";
 
 process.on("uncaughtException", (error) => {
   logger.fatal({ err: error }, "Uncaught Exception");
   process.exit(1);
 });
 
-const app = express();
 
-app
-  .use(helmet())
-  .use(morgan("dev"))
-  .use(
-    cors({
-      origin: env.CLIENT_URL,
-    })
-  )
-  .use(express.json());
+const appInstance = new App() 
+appInstance.listen(env.PORT)
 
-app.get("/test", (_req, res) => {
-  res.json({ message: "Running..." });
-});
-
-app.use("/ocr", ocrRouter);
-
-app.use((req, res) => {
-  res.status(HttpStatus.NOT_FOUND).json({
-    success: false,
-    message: `Route ${req.method} ${req.originalUrl} not found`,
-  });
-});
-app.use(errorHandler);
-
-const server = app.listen(env.PORT, () => {
-  logger.info(`Server is running on port ${env.PORT}`);
-});
+appInstance.server?.on("error", (err) => {
+  logger.fatal(`Failed to start server: ${err} `)
+})
+appInstance.server?.on("connect", (req, sock, head, )=>{
+  logger.info(` Request :  ${req}, Socket : ${sock}, Head : ${head}   `)
+})
 
 process.on("unhandledRejection", (reason) => {
   logger.fatal({ err: reason }, "Unhandled Rejection");
@@ -49,7 +24,11 @@ process.on("unhandledRejection", (reason) => {
 });
 
 function shutdown() {
-  server.close(() => {
+  if (!appInstance.server) {
+    process.exit(1);
+  }
+
+  appInstance.server.close(() => {
     logger.info("HTTP server closed");
     process.exit(1);
   });

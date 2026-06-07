@@ -9,4 +9,7 @@ export const ErrorMessages = {
   LOW_CONFIDENCE_FRONT: "Please upload a more clear front image",
   LOW_CONFIDENCE_REAR: "Please upload a more clear rear image",
   LOW_CONFIDENCE_BOTH: "Please upload more clear front and rear images",
+  INVALID_FRONT_IMAGE_TYPE: "Front image must be JPG, JPEG, or PNG",
+  INVALID_REAR_IMAGE_TYPE: "Rear image must be JPG, JPEG, or PNG",
+  FILES_CANNOT_BE_EMPTY: "Files cannot be empty",
 }

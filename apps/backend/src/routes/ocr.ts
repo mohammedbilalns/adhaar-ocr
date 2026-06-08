@@ -4,6 +4,7 @@ import { OcrController } from '../controllers/ocr.controller'
 import { ImageValidationService } from '../utils/validate-files'
 import { ImagePreprocessingService, OCRService } from '../services'
 import { AadhaarParserService } from '../services/addhaarParsers'
+import { logger } from '../utils/logger'
 const router = Router()
 
 const imageValidationService = new ImageValidationService()
@@ -16,6 +17,10 @@ const ocrController = new OcrController(
   ocrService,
   adhaarParserService
 )
+
+void ocrService.warmUp().catch((error) => {
+  logger.warn({ err: error }, 'OCR warmup failed')
+})
 
 router.post(
   '/aadhaar',

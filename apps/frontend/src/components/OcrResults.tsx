@@ -1,4 +1,9 @@
-import { type ExtractedRecord, type OcrStatus, type UploadState } from '../lib/ocr'
+import { useState } from 'react'
+import {
+  type ExtractedRecord,
+  type OcrStatus,
+  type UploadState,
+} from '../lib/ocr'
 
 type OcrResultsProps = {
   ocrStatus: OcrStatus
@@ -17,11 +22,37 @@ export function OcrResults({
   frontUpload: _frontUpload,
   backUpload: _backUpload,
 }: OcrResultsProps) {
+  const [copied, setCopied] = useState(false)
+
   if (ocrStatus === 'idle') {
     return null
   }
 
   const isLoading = ocrStatus === 'processing'
+
+  const handleCopy = async () => {
+    if (!extractedRecord) return
+
+    const text = `
+Aadhaar Number: ${extractedRecord.adhaarNumber ?? 'Not found'}
+Full Name: ${extractedRecord.name ?? 'Not found'}
+Date of Birth: ${extractedRecord.dob ?? 'Not found'}
+Gender: ${extractedRecord.gender ?? 'Not found'}
+Address: ${extractedRecord.address ?? 'Not found'}
+Pincode: ${extractedRecord.pincode ?? 'Not found'}
+    `.trim()
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+
+      setTimeout(() => {
+        setCopied(false)
+      }, 2000)
+    } catch (err) {
+      console.error('Failed to copy', err)
+    }
+  }
 
   return (
     <section className="results-grid reveal">
@@ -31,12 +62,24 @@ export function OcrResults({
             <div className="section-kicker">Output</div>
             <h2>Extracted Aadhaar information</h2>
           </div>
+
+          {extractedRecord && !isLoading && ocrStatus !== 'error' && (
+            <button
+              type="button"
+              className="copy-button"
+              onClick={handleCopy}
+            >
+              {copied ? 'Copied ✓' : 'Copy'}
+            </button>
+          )}
         </div>
 
         {ocrStatus === 'error' ? (
           <div className="empty-record error-record">
             <p>{ocrError ?? 'Unable to process the uploaded images.'}</p>
-            <span>The message above is returned by the backend when available.</span>
+            <span>
+              The message above is returned by the backend when available.
+            </span>
           </div>
         ) : isLoading ? (
           <div className="loading-record">
@@ -50,22 +93,27 @@ export function OcrResults({
                 <span className="loading-label" />
                 <span className="loading-value" />
               </div>
+
               <div className="loading-block">
                 <span className="loading-label" />
                 <span className="loading-value" />
               </div>
+
               <div className="loading-block">
                 <span className="loading-label" />
                 <span className="loading-value" />
               </div>
+
               <div className="loading-block">
                 <span className="loading-label" />
                 <span className="loading-value" />
               </div>
+
               <div className="loading-block loading-block-wide">
                 <span className="loading-label" />
                 <span className="loading-value loading-value-tall" />
               </div>
+
               <div className="loading-block">
                 <span className="loading-label" />
                 <span className="loading-value" />
@@ -78,22 +126,27 @@ export function OcrResults({
               <span>Aadhaar number</span>
               <strong>{extractedRecord.adhaarNumber ?? 'Not found'}</strong>
             </div>
+
             <div className="record-field">
               <span>Full name</span>
               <strong>{extractedRecord.name ?? 'Not found'}</strong>
             </div>
+
             <div className="record-field">
               <span>Date of birth</span>
               <strong>{extractedRecord.dob ?? 'Not found'}</strong>
             </div>
+
             <div className="record-field">
               <span>Gender</span>
               <strong>{extractedRecord.gender ?? 'Not found'}</strong>
             </div>
+
             <div className="record-field record-field-wide">
               <span>Address</span>
               <strong>{extractedRecord.address ?? 'Not found'}</strong>
             </div>
+
             <div className="record-field">
               <span>Pincode</span>
               <strong>{extractedRecord.pincode ?? 'Not found'}</strong>

@@ -151,3 +151,27 @@ h3 {
 ::selection {
   background: rgba(31, 108, 159, 0.18);
 }
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copy-button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.copy-button:hover {
+  background: #f3f4f6;
+}
+
+.copy-button:active {
+  transform: scale(0.98);
+}

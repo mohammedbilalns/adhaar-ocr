@@ -59,6 +59,25 @@ export function useAadhaarOcr() {
     }
   }
 
+  const resetAll = () => {
+    // Clear all object URLs
+    Object.values(uploads).forEach((upload) => {
+      clearUploadResource(upload.previewUrl)
+      clearUploadResource(upload.sourceUrl)
+    })
+
+    if (editor) {
+      clearUploadResource(editor.sourceUrl)
+    }
+
+    resetOcrState()
+    setUploads({
+      front: initialUploadState,
+      back: initialUploadState,
+    })
+    setEditor(null)
+  }
+
   const clearUploadResource = (previewUrl?: string) => {
     clearObjectUrl(previewUrl)
   }
@@ -239,6 +258,7 @@ export function useAadhaarOcr() {
     cancelEditing,
     saveEditing,
     startOcr,
+    resetAll,
   }
 
   function trackObjectUrl(url: string) {

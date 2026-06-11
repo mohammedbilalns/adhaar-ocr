@@ -11,10 +11,10 @@ import { AadhaarParserService } from "../services/addhaarParsers";
 
 export class OcrController {
   constructor(
-    private readonly imageValidationService: ImageValidationService,
-    private readonly imagePreprocessingService: ImagePreprocessingService,
-    private readonly ocrService: OCRService,
-    private readonly aadhaarParserService: AadhaarParserService
+    private readonly _imageValidationService: ImageValidationService,
+    private readonly _imagePreprocessingService: ImagePreprocessingService,
+    private readonly _ocrService: OCRService,
+    private readonly _aadhaarParserService: AadhaarParserService
   ) {}
 
   public  handleOCR = asyncHandler(
@@ -22,20 +22,20 @@ export class OcrController {
       const files = (req as OcrMulterRequest).files;
 
       const { frontFile, backFile } =
-        this.imageValidationService.validateImageFiles(files);
+        this._imageValidationService.validateImageFiles(files);
 
       const processedImages = await Promise.all([
-        this.imagePreprocessingService.preprocessFrontImage(
+        this._imagePreprocessingService.preprocessFrontImage(
           frontFile.buffer
         ),
-        this.imagePreprocessingService.preprocessRearImage(
+        this._imagePreprocessingService.preprocessRearImage(
           backFile.buffer
         ),
       ]);
 
       const [frontData, rearData] = await Promise.all([
-        this.ocrService.recognizeText(processedImages[0]),
-        this.ocrService.recognizeText(processedImages[1]),
+        this._ocrService.recognizeText(processedImages[0]),
+        this._ocrService.recognizeText(processedImages[1]),
       ]);
 
       logger.debug(`Front data: ${frontData.text}`);
@@ -69,7 +69,7 @@ export class OcrController {
       }
 
       const payload =
-        this.aadhaarParserService.parseAdhaarTexts(
+        this._aadhaarParserService.parseAdhaarTexts(
           frontData.text,
           rearData.text
         );

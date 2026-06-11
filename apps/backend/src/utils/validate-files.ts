@@ -3,7 +3,7 @@ import { AppError } from "./app-error";
 import { OcrFiles} from "./types";
 
 export class ImageValidationService {
-  private readonly allowedMimeTypes = [
+  private readonly _allowedMimeTypes = [
     "image/jpeg",
     "image/png",
     "image/jpg",
@@ -27,14 +27,14 @@ export class ImageValidationService {
       );
     }
 
-    if (!this.allowedMimeTypes.includes(frontFile.mimetype)) {
+    if (!this._allowedMimeTypes.includes(frontFile.mimetype)) {
       throw new AppError(
         ErrorMessages.INVALID_FRONT_IMAGE_TYPE,
         HttpStatus.BAD_REQUEST
       );
     }
 
-    if (!this.allowedMimeTypes.includes(backFile.mimetype)) {
+    if (!this._allowedMimeTypes.includes(backFile.mimetype)) {
       throw new AppError(
         ErrorMessages.INVALID_REAR_IMAGE_TYPE,
         HttpStatus.BAD_REQUEST

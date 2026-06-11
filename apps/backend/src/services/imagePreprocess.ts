@@ -1,14 +1,14 @@
 import sharp from 'sharp'
 
 export class ImagePreprocessingService {
-  private readonly maxDimension = 1800
+  private readonly _maxDimension = 1800
 
   private preprocessFront(buffer: Buffer) {
     return sharp(buffer)
       .rotate() // auto rotates image based on EXIF orientation metadata 
       .resize({
-        width: this.maxDimension,
-        height: this.maxDimension,
+        width: this._maxDimension,
+        height: this._maxDimension,
         fit: 'inside', // keeps the whole image visible 
         withoutEnlargement: true, // avoids upscaling small images
       }) // scales the image down so that side doesnt exceeds max dimension 
@@ -34,8 +34,8 @@ export class ImagePreprocessingService {
     return sharp(buffer)
       .rotate()
       .resize({
-        width: this.maxDimension,
-        height: this.maxDimension,
+        width: this._maxDimension,
+        height: this._maxDimension,
         fit: 'inside',
         withoutEnlargement: true,
       })

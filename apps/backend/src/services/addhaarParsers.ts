@@ -1,6 +1,14 @@
 import { ErrorMessages, HttpStatus } from "../constants";
 import { AppError } from "../utils/app-error";
-import { extractAddress, extractAdhaarNumber, extractDOB, extractGender, extractGovermentText, extractPincode,extractName } from "./parsers";
+import {
+  extractAddress,
+  extractAdhaarNumber,
+  extractDOB,
+  extractGender,
+  extractGovermentText,
+  extractName,
+  extractPincode,
+} from "./parsers";
 import { logger } from "../utils/logger";
 
 export class AadhaarParserService {
@@ -17,12 +25,23 @@ export class AadhaarParserService {
 
     const frontData = this.parseAdhaarFront(ocrText1);
     const rearData = this.parseAdhaarRear(ocrText2);
+    const frontAdhaarNumber = this.normalizeAdhaarNumber(frontData.adhaarNumber);
+    const rearAdhaarNumber = this.normalizeAdhaarNumber(rearData.adhaarNumber);
+
+    if (
+      (frontAdhaarNumber || rearAdhaarNumber) &&
+      frontAdhaarNumber !== rearAdhaarNumber
+    ) {
+      throw new AppError(
+        ErrorMessages.IMAGE_MISMATCH,
+        HttpStatus.BAD_REQUEST
+      );
+    }
 
     return {
       ...frontData,
       ...rearData,
-      adhaarNumber:
-      frontData.adhaarNumber || rearData.adhaarNumber,
+      adhaarNumber: frontData.adhaarNumber || rearData.adhaarNumber || null,
     };
   }
 
@@ -57,7 +76,7 @@ name: ${name}
       name,
       dob,
       gender,
-      adhaarNumber,
+      adhaarNumber: adhaarNumber || null,
     };
   }
 
@@ -89,9 +108,13 @@ pincode: ${pincode}
     }
 
     return {
-      adhaarNumber,
+      adhaarNumber: adhaarNumber || null,
       address,
       pincode,
     };
+  }
+
+  private normalizeAdhaarNumber(adhaarNumber: string | null) {
+    return adhaarNumber ? adhaarNumber.replace(/\D/g, "") : "";
   }
 }

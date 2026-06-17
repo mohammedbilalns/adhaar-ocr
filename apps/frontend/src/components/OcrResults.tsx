@@ -77,9 +77,7 @@ Pincode: ${extractedRecord.pincode ?? 'Not found'}
         {ocrStatus === 'error' ? (
           <div className="empty-record error-record">
             <p>{ocrError ?? 'Unable to process the uploaded images.'}</p>
-            <span>
-              The message above is returned by the backend when available.
-            </span>
+         
           </div>
         ) : isLoading ? (
           <div className="loading-record">

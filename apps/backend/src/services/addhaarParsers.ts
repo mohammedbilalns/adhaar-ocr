@@ -41,7 +41,7 @@ name: ${name}
 
     if (!gender && !dob) {
       throw new AppError(
-        ErrorMessages.UPLOAD_CLEAR_IMAGE,
+        ErrorMessages.INVALID_AADHAAR_DOCUMENT,
         HttpStatus.BAD_REQUEST
       );
     }
@@ -76,7 +76,7 @@ pincode: ${pincode}
 
     if (!govtText && !address && !pincode) {
       throw new AppError(
-        ErrorMessages.UPLOAD_CLEAR_IMAGE,
+        ErrorMessages.INVALID_AADHAAR_DOCUMENT,
         HttpStatus.BAD_REQUEST
       );
     }

@@ -2,26 +2,26 @@ import os from 'node:os'
 import { createScheduler, createWorker, PSM } from 'tesseract.js'
 
 export class OCRService {
-  private scheduler: Awaited<ReturnType<typeof createScheduler>> | null = null
-  private initPromise: Promise<void> | null = null
-  private readonly workerCount = Math.min(2, Math.max(1, os.cpus().length))
+  private _scheduler: Awaited<ReturnType<typeof createScheduler>> | null = null
+  private _initPromise: Promise<void> | null = null
+  private readonly _workerCount = Math.min(2, Math.max(1, os.cpus().length))
 
   private async ensureScheduler() {
-    if (this.scheduler) {
-      return this.scheduler
+    if (this._scheduler) {
+      return this._scheduler
     }
 
-    if (!this.initPromise) {
-      this.initPromise = this.initializeScheduler()
+    if (!this._initPromise) {
+      this._initPromise = this.initializeScheduler()
     }
 
-    await this.initPromise
+    await this._initPromise
 
-    if (!this.scheduler) {
+    if (!this._scheduler) {
       throw new Error('OCR scheduler failed to initialize.')
     }
 
-    return this.scheduler
+    return this._scheduler
   }
 
   public async warmUp() {
@@ -33,7 +33,7 @@ export class OCRService {
 
     try {
       await Promise.all(
-        Array.from({ length: this.workerCount }, async () => {
+        Array.from({ length: this._workerCount }, async () => {
           const worker = await createWorker('eng')
 
           await worker.setParameters({
@@ -47,12 +47,12 @@ export class OCRService {
         })
       )
 
-      this.scheduler = scheduler
+      this._scheduler = scheduler
     } catch (error) {
       await scheduler.terminate().catch(() => undefined)
       throw error
     } finally {
-      this.initPromise = null
+      this._initPromise = null
     }
   }
 
@@ -67,9 +67,9 @@ export class OCRService {
   }
 
   public async terminate() {
-    if (this.scheduler) {
-      await this.scheduler.terminate()
-      this.scheduler = null
+    if (this._scheduler) {
+      await this._scheduler.terminate()
+      this._scheduler = null
     }
   }
 }

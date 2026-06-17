@@ -21,6 +21,7 @@ function App() {
     cancelEditing,
     saveEditing,
     startOcr,
+    resetAll,
   } = useAadhaarOcr()
 
   return (
@@ -68,6 +69,13 @@ function App() {
         <p className="upload-note">Maximum file size: 10 MB per image.</p>
 
         <div className="workspace-footer">
+          <button
+            type="button"
+            className="reset-button"
+            onClick={resetAll}
+          >
+            Reset
+          </button>
           <button
             type="button"
             className="ocr-button"

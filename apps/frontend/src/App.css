@@ -748,6 +748,10 @@
   color: var(--text-strong);
 }
 
+.error-record p {
+  color: #9f2f2d;
+}
+
 .field-hint,
 .field-error {
   font-size: 0.88rem;
